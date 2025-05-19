@@ -18,8 +18,6 @@ export default function Page() {
   const [password, setPassword] = useState("");
 
   const onSubmit = async () => {
-    console.log(auth);
-    // const result = await createUserWithEmailAndPassword(auth, email, password);
     const result = await createUser(email, password);
     if (!result) {
       console.error("Failed to create user");

@@ -4,12 +4,30 @@ import Link from "next/link";
 import { useAuthState, useSignOut } from "react-firebase-hooks/auth";
 import { SignedIn } from "./components/signed-in";
 import { SignedOut } from "./components/signed-out";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Student } from "@/types/types";
 
 const Home = () => {
   const [user, loading] = useAuthState(auth);
   const [signOut] = useSignOut(auth);
+  const [students, setStudents] = useState<Student[]>([]);
 
-  console.log("user", user);
+  useEffect(() => {
+    if (!user) return;
+    const getStudents = async () => {
+      try {
+        const token = await user.getIdToken();
+        const response = await axios.get("/api/students", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setStudents(response.data.students);
+      } catch (error) {
+        console.error("Failed to fetch students:", error);
+      }
+    };
+    getStudents();
+  }, [user]);
 
   return (
     <div className="bg-black">
@@ -42,6 +60,20 @@ const Home = () => {
           </Link>
         </SignedOut>
       </>
+      <div>
+        Students
+        {students.length > 0 ? (
+          <ul>
+            {students.map((student) => (
+              <li key={student.id} className="text-primary-500">
+                {student.name}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-primary-500">No students found</p>
+        )}
+      </div>
     </div>
   );
 };
